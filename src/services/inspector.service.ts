@@ -78,6 +78,7 @@ const SEED_CATALOG: SeedEntry[] = [
   { name: "GENESIS-GHOST-FLEET", port: 8811, tier: "TIER_3", containerName: "genesis-ghost-fleet", stateEndpoint: null, dependencies: [], tags: ["governance", "decoy"] },
   { name: "GENESIS-FOLLOW-THE-SUN", port: 8815, tier: "TIER_3", containerName: "genesis-follow-the-sun", stateEndpoint: "/state", dependencies: ["GENESIS-BRIGHTON-PROTOCOL", "GENESIS-CIA", "GENESIS-TREASURY-SENTINEL"], tags: ["governance", "session"] },
   { name: "GENESIS-RED-AGGRESSOR-FORCE", port: 8812, tier: "TIER_3", containerName: "genesis-red-aggressor-force", stateEndpoint: null, dependencies: [], tags: ["governance", "red-team"] },
+  { name: "GENESIS-BLACKOUT-PROTOCOL", port: 8860, tier: "TIER_3", containerName: "genesis-blackout-protocol", stateEndpoint: "/state", dependencies: ["GENESIS-CIA", "GENESIS-DARPA", "GENESIS-ARIS"], tags: ["governance", "defence", "recovery"] },
 
   // --- TIER_4: Ingestors ---
   // Core 6
