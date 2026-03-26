@@ -81,6 +81,9 @@ const SEED_CATALOG: SeedEntry[] = [
   { name: "GENESIS-BLACKOUT-PROTOCOL", port: 8860, tier: "TIER_3", containerName: "genesis-blackout-protocol", stateEndpoint: "/state", dependencies: ["GENESIS-CIA", "GENESIS-DARPA", "GENESIS-ARIS"], tags: ["governance", "defence", "recovery"] },
   { name: "GENESIS-MIRROR-FEED", port: 8850, tier: "TIER_2", containerName: "genesis-mirror-feed", stateEndpoint: "/state", dependencies: ["GENESIS-INGESTION-GATE", "GENESIS-CEX-EXECUTOR", "GENESIS-BEACHHEAD-EXECUTOR", "GENESIS-CIA"], tags: ["intelligence", "self-referential", "weapon"] },
   { name: "GENESIS-SELF-ONTOLOGY", port: 8851, tier: "TIER_2", containerName: "genesis-self-ontology", stateEndpoint: "/state", dependencies: ["GENESIS-MIRROR-FEED", "GENESIS-CIA", "GENESIS-WHITEBOARD"], tags: ["intelligence", "self-referential", "weapon"] },
+  { name: "GENESIS-SIG-NULLIFIER", port: 8852, tier: "TIER_2", containerName: "genesis-sig-nullifier", stateEndpoint: "/state", dependencies: ["GENESIS-MIRROR-FEED", "GENESIS-SENTRY", "GENESIS-KLINGON-CLOAKING"], tags: ["stealth", "weapon", "srcs"] },
+  { name: "GENESIS-GHOSTBAT-WINGMAN", port: 8853, tier: "TIER_2", containerName: "genesis-ghostbat-wingman", stateEndpoint: "/state", dependencies: ["GENESIS-ARB-DETECTOR", "GENESIS-CEX-EXECUTOR", "GENESIS-BEACHHEAD-EXECUTOR"], tags: ["stealth", "weapon", "formation"] },
+  { name: "GENESIS-PHANTOM-PULSE", port: 8854, tier: "TIER_2", containerName: "genesis-phantom-pulse", stateEndpoint: "/state", dependencies: ["GENESIS-SENTRY", "GENESIS-GHOST-SIMULATOR", "GENESIS-KLINGON-CLOAKING"], tags: ["stealth", "weapon", "ew"] },
 
   // --- TIER_4: Ingestors ---
   // Core 6
