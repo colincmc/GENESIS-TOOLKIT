@@ -79,6 +79,8 @@ const SEED_CATALOG: SeedEntry[] = [
   { name: "GENESIS-FOLLOW-THE-SUN", port: 8815, tier: "TIER_3", containerName: "genesis-follow-the-sun", stateEndpoint: "/state", dependencies: ["GENESIS-BRIGHTON-PROTOCOL", "GENESIS-CIA", "GENESIS-TREASURY-SENTINEL"], tags: ["governance", "session"] },
   { name: "GENESIS-RED-AGGRESSOR-FORCE", port: 8812, tier: "TIER_3", containerName: "genesis-red-aggressor-force", stateEndpoint: null, dependencies: [], tags: ["governance", "red-team"] },
   { name: "GENESIS-BLACKOUT-PROTOCOL", port: 8860, tier: "TIER_3", containerName: "genesis-blackout-protocol", stateEndpoint: "/state", dependencies: ["GENESIS-CIA", "GENESIS-DARPA", "GENESIS-ARIS"], tags: ["governance", "defence", "recovery"] },
+  { name: "GENESIS-MIRROR-FEED", port: 8850, tier: "TIER_2", containerName: "genesis-mirror-feed", stateEndpoint: "/state", dependencies: ["GENESIS-INGESTION-GATE", "GENESIS-CEX-EXECUTOR", "GENESIS-BEACHHEAD-EXECUTOR", "GENESIS-CIA"], tags: ["intelligence", "self-referential", "weapon"] },
+  { name: "GENESIS-SELF-ONTOLOGY", port: 8851, tier: "TIER_2", containerName: "genesis-self-ontology", stateEndpoint: "/state", dependencies: ["GENESIS-MIRROR-FEED", "GENESIS-CIA", "GENESIS-WHITEBOARD"], tags: ["intelligence", "self-referential", "weapon"] },
 
   // --- TIER_4: Ingestors ---
   // Core 6
