@@ -84,6 +84,7 @@ const SEED_CATALOG: SeedEntry[] = [
   { name: "GENESIS-SIG-NULLIFIER", port: 8852, tier: "TIER_2", containerName: "genesis-sig-nullifier", stateEndpoint: "/state", dependencies: ["GENESIS-MIRROR-FEED", "GENESIS-SENTRY", "GENESIS-KLINGON-CLOAKING"], tags: ["stealth", "weapon", "srcs"] },
   { name: "GENESIS-GHOSTBAT-WINGMAN", port: 8853, tier: "TIER_2", containerName: "genesis-ghostbat-wingman", stateEndpoint: "/state", dependencies: ["GENESIS-ARB-DETECTOR", "GENESIS-CEX-EXECUTOR", "GENESIS-BEACHHEAD-EXECUTOR"], tags: ["stealth", "weapon", "formation"] },
   { name: "GENESIS-PHANTOM-PULSE", port: 8854, tier: "TIER_2", containerName: "genesis-phantom-pulse", stateEndpoint: "/state", dependencies: ["GENESIS-SENTRY", "GENESIS-GHOST-SIMULATOR", "GENESIS-KLINGON-CLOAKING"], tags: ["stealth", "weapon", "ew"] },
+  { name: "GENESIS-REGIME-DETECTOR", port: 8855, tier: "TIER_2", containerName: "genesis-regime-detector", stateEndpoint: "/state", dependencies: ["GENESIS-ARB-DETECTOR"], tags: ["intel", "recon", "weapon", "hmm"] },
 
   // --- TIER_4: Ingestors ---
   // Core 6
