@@ -2,7 +2,8 @@
 // GENESIS-TOOLKIT — Stack Health, Dynamic Repair & Battlegroup Readiness
 // Port 8820. "Don't expect, inspect." Perpetual loop mission.
 // FIX → REPORT WHAT → REPORT ACTION → REPORT SOLVED → MOVE ON.
-// No medals, home. SAS doctrine. 18 endpoints, 6 perpetual loops.
+// No medals, home. SAS doctrine. 22 endpoints, 6 perpetual loops.
+// Cold boot pre-flight: 3 phases, 3 notification channels, GO/NO-GO verdict.
 // ============================================================================
 
 import express from "express";
@@ -12,6 +13,8 @@ import { ReadinessService } from "./services/readiness.service";
 import { SyntheticService } from "./services/synthetic.service";
 import { PreventiveService } from "./services/preventive.service";
 import { ForwarderService } from "./services/forwarder.service";
+import { PreflightService } from "./services/preflight.service";
+import { NotifierService } from "./services/notifier.service";
 import {
   ServiceTier,
   ServiceStatus,
@@ -32,6 +35,8 @@ const readiness = new ReadinessService(inspector);
 const synthetic = new SyntheticService();
 const preventive = new PreventiveService(inspector);
 const forwarder = new ForwarderService();
+const preflight = new PreflightService(inspector, readiness);
+const notifier = new NotifierService();
 
 const startedAt = Date.now();
 
@@ -58,6 +63,7 @@ healer.onHeal((event) => {
 // 1. GET /health — Toolkit own health + readiness summary
 app.get("/health", (_req, res) => {
   const r = readiness.getCurrent();
+  const lastPreflight = preflight.getLastResult();
   res.json({
     status: "GREEN",
     service: "GENESIS-TOOLKIT",
@@ -65,6 +71,13 @@ app.get("/health", (_req, res) => {
     readiness: r.composite,
     readinessCategory: r.category,
     totalServices: inspector.getServiceCount(),
+    preflight: {
+      lastVerdict: lastPreflight?.verdict ?? null,
+      lastMcr: lastPreflight?.mcr ?? null,
+      lastRun: lastPreflight?.completedAt ?? null,
+      running: preflight.isRunning(),
+      channels: notifier.getChannelStatus(),
+    },
     uptime: Math.floor((Date.now() - startedAt) / 1000),
     timestamp: new Date().toISOString(),
   });
@@ -86,6 +99,7 @@ app.get("/state", (_req, res) => {
     totalPreventiveFindings: preventive.getTotalFindings(),
     totalEscalations: forwarder.getTotalEscalations(),
     lastForwardAt: forwarder.getLastForwardAt(),
+    preflight: preflight.getHistory(),
     uptime: Math.floor((Date.now() - startedAt) / 1000),
     timestamp: new Date().toISOString(),
   });
@@ -263,6 +277,47 @@ app.get("/report", (_req, res) => {
       uptime: Math.floor((Date.now() - startedAt) / 1000),
     },
     generatedAt: new Date().toISOString(),
+  });
+});
+
+// 19. POST /preflight/run — Manually trigger pre-flight check
+app.post("/preflight/run", async (_req, res) => {
+  if (preflight.isRunning()) {
+    res.status(409).json({ error: "Pre-flight already running" });
+    return;
+  }
+  const result = await preflight.run();
+  notifier.notifyPreflightResult(result).catch(() => {});
+  res.json(result);
+});
+
+// 20. GET /preflight/last — Last pre-flight result
+app.get("/preflight/last", (_req, res) => {
+  const result = preflight.getLastResult();
+  if (!result) {
+    res.status(404).json({ error: "No pre-flight results yet" });
+    return;
+  }
+  res.json(result);
+});
+
+// 21. GET /preflight/history — All stored pre-flight results (up to 10)
+app.get("/preflight/history", (_req, res) => {
+  res.json(preflight.getHistory());
+});
+
+// 22. GET /preflight/status — Quick summary
+app.get("/preflight/status", (_req, res) => {
+  const result = preflight.getLastResult();
+  res.json({
+    verdict: result?.verdict ?? null,
+    mcr: result?.mcr ?? null,
+    lastRun: result?.completedAt ?? null,
+    retried: result?.retried ?? false,
+    servicesUp: result?.servicesUp ?? null,
+    servicesTotal: result?.servicesTotal ?? null,
+    running: preflight.isRunning(),
+    channels: notifier.getChannelStatus(),
   });
 });
 
@@ -459,9 +514,36 @@ process.on("SIGINT", shutdown);
 // START
 // ============================================================================
 
+const PREFLIGHT_DELAY_MS = Number(process.env.PREFLIGHT_DELAY_MS ?? 10_000);
+
 app.listen(PORT, () => {
+  const channels = notifier.getChannelStatus();
+  console.log(`[TOOLKIT] ============================================================`);
   console.log(`[TOOLKIT] GENESIS-TOOLKIT operational on port ${PORT}`);
-  console.log(`[TOOLKIT] ${inspector.getServiceCount()} services registered`);
-  console.log(`[TOOLKIT] Perpetual loop mission: ACTIVE`);
+  console.log(`[TOOLKIT] ${inspector.getServiceCount()} services registered across 5 tiers`);
+  console.log(`[TOOLKIT] Perpetual loop mission: ACTIVE (6 loops)`);
+  console.log(`[TOOLKIT] Endpoints: 22 | Heal levels: 5 | Synthetic pipelines: 5`);
+  console.log(`[TOOLKIT] Notification channels:`);
+  console.log(`[TOOLKIT]   Signal: ${channels.SIGNAL ? "CONFIGURED" : "NOT CONFIGURED"}`);
+  console.log(`[TOOLKIT]   Email:  ${channels.EMAIL ? "CONFIGURED" : "NOT CONFIGURED"}`);
+  console.log(`[TOOLKIT]   GOD:    ${channels.GOD ? "CONFIGURED" : "STUB (future)"}`);
+  console.log(`[TOOLKIT] Pre-flight check scheduled in ${PREFLIGHT_DELAY_MS / 1000}s...`);
   console.log(`[TOOLKIT] Doctrine: Don't expect, inspect. Fix first. No medals, home.`);
+  console.log(`[TOOLKIT] ============================================================`);
+
+  // Cold boot pre-flight check
+  setTimeout(async () => {
+    try {
+      console.log(`[TOOLKIT] PRE-FLIGHT — Cold boot check initiating...`);
+      const result = await preflight.run();
+      const notifications = await notifier.notifyPreflightResult(result);
+      const sent = notifications.filter((n) => n.sent).map((n) => n.channel);
+      console.log(`[TOOLKIT] PRE-FLIGHT COMPLETE — ${result.verdict} | MCR: ${result.mcr}% | Notified: ${sent.length > 0 ? sent.join(", ") : "none (channels not configured)"}`);
+
+      // Forward to GTC for telemetry
+      forwarder.forwardSyntheticResults([]);
+    } catch (e) {
+      console.log(`[TOOLKIT] PRE-FLIGHT FAILED — ${e instanceof Error ? e.message : e}`);
+    }
+  }, PREFLIGHT_DELAY_MS);
 });

@@ -222,3 +222,96 @@ export interface ServiceRegistrationPayload {
   dependencies?: string[];
   tags?: string[];
 }
+
+// ============================================================================
+// PRE-FLIGHT CHECK — Cold Boot Stack Verification
+// 3 phases: HEARTBEAT → SYNTHETIC TRACE → CAPITAL & GOVERNANCE
+// Verdict: GREEN (GO) | AMBER (CONDITIONAL GO) | RED (NO-GO)
+// ============================================================================
+
+export type PreflightVerdict = "GREEN" | "AMBER" | "RED";
+export type PreflightPhase = "HEARTBEAT" | "SYNTHETIC_TRACE" | "CAPITAL_GOVERNANCE";
+
+export interface PreflightHeartbeat {
+  name: string;
+  port: number;
+  tier: ServiceTier;
+  status: "UP" | "DOWN" | "TIMEOUT";
+  latencyMs: number;
+  httpStatus: number | null;
+}
+
+export interface PreflightTraceStep {
+  service: string;
+  port: number;
+  action: string;
+  status: "PASS" | "FAIL" | "SKIP";
+  latencyMs: number;
+  detail: string;
+}
+
+export interface PreflightTrace {
+  name: string;
+  fingerprint: string;
+  steps: PreflightTraceStep[];
+  passed: boolean;
+  durationMs: number;
+}
+
+export interface PreflightCapitalCheck {
+  name: string;
+  status: "PASS" | "FAIL" | "SKIP";
+  detail: string;
+  latencyMs: number;
+}
+
+export interface PreflightPhaseResult {
+  phase: PreflightPhase;
+  passed: boolean;
+  durationMs: number;
+  details: PreflightHeartbeat[] | PreflightTrace[] | PreflightCapitalCheck[];
+}
+
+export interface PreflightResult {
+  id: string;
+  verdict: PreflightVerdict;
+  mcr: number;
+  phases: PreflightPhaseResult[];
+  servicesUp: number;
+  servicesDown: number;
+  servicesTotal: number;
+  tracesPass: number;
+  tracesFail: number;
+  retried: boolean;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+}
+
+// --- Notification System ---
+
+export type NotificationChannel = "SIGNAL" | "EMAIL" | "GOD";
+
+export interface NotificationResult {
+  channel: NotificationChannel;
+  sent: boolean;
+  error: string | null;
+  timestamp: string;
+}
+
+// --- GOD Dashboard Stub (future development) ---
+
+export interface GodPreflightPayload {
+  type: "PREFLIGHT_RESULT";
+  result: PreflightResult;
+  notifications: NotificationResult[];
+  timestamp: string;
+}
+
+export interface GodAlertPayload {
+  type: "ALERT";
+  severity: string;
+  title: string;
+  message: string;
+  timestamp: string;
+}
